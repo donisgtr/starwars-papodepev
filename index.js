@@ -6,6 +6,7 @@ const navesContador = document.getElementById("naves");
 preencherContadores();
 preeecherTabela();
 
+
 function preencherContadores() {
 
     Promise.all([
@@ -23,12 +24,46 @@ function preencherContadores() {
 }
 
 async function preeecherTabela(){
-    const response = await swapiGet('films/')
-    console.log(response);
+    const response = await swapiGet('films/');
+    const tableData = response.data.results;
+    console.log(tableData);
+    
+    tableData.forEach((film) => {
+        $('#filmsTable').append(`<tr>
+        <td>${film.title}</td>
+        <td>${moment(film.release_date).format("DD/MM/YYYY")}</td>
+        <td>${film.director}</td>
+        <td>${film.episode_id}</td>
+        </tr>`);
+    })
 }
 
 function swapiGet(params) {
     return axios.get(`https://swapi.dev/api/${params}`);
 }
 
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(desenhaGrafico);
 
+async function desenhaGrafico() {
+const response = await swapiGet('vehicles/');
+const vehiclesArray = response.data.results;
+console.log(vehiclesArray);
+
+const dataArray = [];
+dataArray.push(['Veiculos', 'Passageiros']);
+vehiclesArray.forEach( (vehicle) => {
+    dataArray.push([vehicle.name, Number(vehicle.passengers)]);
+})
+
+  var data = google.visualization.arrayToDataTable(dataArray);
+
+  var options = {
+    title: 'Maiores Veiculos',
+    legend: "none"
+  };
+
+  var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+  chart.draw(data, options);
+}
